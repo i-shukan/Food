@@ -99,12 +99,15 @@ const triggers = document.querySelectorAll('[data-modal]'),
       modalClose = modal.querySelector('[data-close]'),
       inputs = modalForm.querySelectorAll('.modal__input');
 
+function showModal() {
+    modal.classList.remove('hide');
+    modal.classList.add('show', 'fade');
+    document.body.style.overflow = 'hidden';
+    clearInterval(modalTimerId);
+}
+
 triggers.forEach((item) => {
-    item.addEventListener('click', () => {
-        modal.classList.remove('hide');
-        modal.classList.add('show', 'fade');
-        document.body.style.overflow = 'hidden';
-    });
+    item.addEventListener('click', showModal);
 });
 
 function checkInputs(arr) {
@@ -146,3 +149,14 @@ document.addEventListener('keydown', (event) => {
         hideModal();
     }
 });
+
+const modalTimerId = setTimeout(showModal, 5000);
+
+function showModalByScroll() {
+    if (window.pageYOffset + document.documentElement.clientHeight >= document.documentElement.scrollHeight) {
+        showModal();
+        window.removeEventListener('scroll', showModalByScroll);
+    }
+}
+
+window.addEventListener('scroll', showModalByScroll);
