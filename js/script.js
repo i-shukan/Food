@@ -285,39 +285,83 @@ window.addEventListener('DOMContentLoaded', function() {
     // Slider
 
     const slider = document.querySelector('.offer__slider'),
+          next = slider.querySelector('.offer__slider-next'),
+          prev = slider.querySelector('.offer__slider-prev'),
           current = slider.querySelector('#current'),
           total = slider.querySelector('#total'),
-          prev = slider.querySelector('.offer__slider-prev'),
-          next = slider.querySelector('.offer__slider-next'),
-          slides = slider.querySelectorAll('.offer__slide');
+          slidesWrapper = slider.querySelector('.offer__slider-wrapper'),
+          slidesField = slider.querySelector('.offer__slider-inner'),
+          slides = slider.querySelectorAll('.offer__slide'),
+          width = +window.getComputedStyle(slidesWrapper).width.replace(/\D/g, '');
+    let currentInd = 1,
+        offset = 0,
+        dots = document.createElement('ul'),
+        dotsArr = [];
 
-    let currentInd = 1;
+    dots.classList.add('carousel-indicators');
 
-    total.textContent = getZero(slides.length);
+    for (let i = 0; i < slides.length; i++) {
+        const dot = document.createElement('li');
+        dot.classList.add('dot');
+        dot.setAttribute('data-slide-i', i + 1);
 
-    [current, total, prev, next, ...slides].forEach(item => {
-        item.classList.add('nocopy');
-    }); 
+        if (i == 0) dot.style.opacity = '1';
 
-    function resetSlider(i) {
-        slides.forEach(item => {
-            item.classList.remove('show');
-            item.classList.add('hide');
-        });
-
-        if (i > slides.length) {
-            currentInd = i = 1;
-        } else if (i < 1) {
-            currentInd = i = slides.length;
-        }
-
-        current.textContent = getZero(i);
-        slides[i-1].classList.remove('hide');
-        slides[i-1].classList.add('show');
+        dots.append(dot);
+        dotsArr.push(dot);
     }
 
-    prev.addEventListener('click', () => { resetSlider(--currentInd)});
-    next.addEventListener('click', () => { resetSlider(++currentInd)});
+    slidesWrapper.append(dots);
 
-    resetSlider(currentInd);
+    current.textContent = getZero(currentInd);
+    total.textContent = getZero(slides.length);
+
+    slidesWrapper.style.overflow = 'hidden';
+    slidesWrapper.style.position = 'relative';
+
+    slidesField.style.cssText = `
+        display: flex;
+        transition: 0.5s all;
+        width: ${100 * slides.length}%;
+    `;
+
+    function resetSlider() {
+        dotsArr.forEach(dot => dot.style.opacity = '0.5');
+        dotsArr[currentInd - 1].style.opacity = '1';
+        slidesField.style.transform = `translateX(${-offset}px)`;
+        current.textContent = getZero(currentInd);
+    }
+
+    dotsArr.forEach(dot => {
+        dot.addEventListener('click', (e) => {
+            currentInd = e.target.getAttribute('data-slide-i');
+            offset = width * (currentInd - 1);
+
+            resetSlider();
+        })
+    })
+
+    next.addEventListener('click', () => {
+        if (offset == width * (slides.length - 1)) {
+            currentInd = 1;
+            offset = 0;
+        } else {
+            currentInd++;
+            offset += width;
+        }
+
+        resetSlider();
+    });
+
+    prev.addEventListener('click', () => {
+        if (offset == 0) {
+            currentInd = slides.length;
+            offset = width * (slides.length - 1);
+        } else {
+            currentInd--;
+            offset -= width;
+        }
+        
+        resetSlider();
+    });
 });
